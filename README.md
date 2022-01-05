@@ -7,4 +7,4 @@ My apartment is currently located near a busy intersection. With the arrival of 
 ## Architecture Overview
 As I've discussed in my other projects, I'm a fan of Google Cloud thanks to their generous free tier. I decided to continue with them, using some old favorites (Functions and BigQuery) plus taking the opportunity to learn some new tools (Pub/Sub, IoT Core, and Data Studio). An overview of the architecture is in the diagram below (you can get the Google Cloud Icons [here](https://cloud.google.com/icons/).
 
-![RPi Architecture](https://raw.githubusercontent.com/fritzel56/rpi-sensors/master/images/rpi-architecture.png)
+![RPi Architecture](https://raw.githubusercontent.com/fritzel56/rpi-sensors/readme/images/rpi-architecture.png)
