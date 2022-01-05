@@ -1,5 +1,5 @@
 # Project Overview
-This repository holds the code that I'm using read data from sensors for air particulate matter and ambient sound levels to a Raspberry Pi and then stream it = to Google Cloud.
+This repository holds the code that I'm using read data from sensors for air particulate matter and ambient sound levels to a Raspberry Pi and then stream it to Google Cloud.
 
 ## Motivation
 My apartment is currently located near a busy intersection. With the arrival of COVID, I started working from home and became much more aware of the volume of traffic going by outside. So I did what any engineer would do: I bought a Raspberry Pi and a couple sensors and started streaming data to the web.
