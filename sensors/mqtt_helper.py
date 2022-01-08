@@ -45,4 +45,3 @@ def send(device_id, action, data='', sub_topic=''):
     
     # Send message
     sock.sendto(message.encode('utf8'), server_address)
-    SendCommandSilent(client_sock, server_address, message, False)
