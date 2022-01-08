@@ -49,9 +49,9 @@ def readSPL(dev):
 if __name__ == '__main__':
     logging.info('started up')
     # connect to MQTT gateway
-    response = mh.send(device_id, 'detach', '')
+    response = mh.send(DEVICEID, 'detach', '')
     logging.info(f'detach response: {response}')
-    response = mh.send(device_id, 'attach', '')
+    response = mh.send(DEVICEID, 'attach', '')
     logging.info(f'attach response: {response}')
     logging.info('connected to gateway')
     
