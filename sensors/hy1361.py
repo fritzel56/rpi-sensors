@@ -9,7 +9,7 @@ import logging
 logging.basicConfig(level=logging.WARNING)
 
 # Device information
-LOCATION = 1
+LOCATION = 2
 DEVICEID = 'WS1361-decibel-meter'
 
 # HY1361 settings

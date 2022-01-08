@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.WARNING)
 if __name__ == '__main__':
     # set basic device infro
     device_id = 'SDS011'
-    location = 1
+    location = 2
     
     # ensure device is connected to the server
     response = mh.send(device_id, 'detach', '')
