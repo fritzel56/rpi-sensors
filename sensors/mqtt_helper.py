@@ -17,8 +17,8 @@ def make_message(device_id, action, data='', sub_topic=''):
         dict: formatted message to send to the MQTT server
     """
     if data:
-        return '{{ "device" : "{}", "action":"{}", "data" : "{}", "sub_topic" : "{}" , "json_flag": "{}" }}'.format(
-            device_id, action, data, sub_topic, json_flag)
+        return '{{ "device" : "{}", "action":"{}", "data" : "{}", "sub_topic" : "{}" }}'.format(
+            device_id, action, data, sub_topic)
     else:
         return '{{ "device" : "{}", "action":"{}" }}'.format(device_id, action)
 
