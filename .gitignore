@@ -1,2 +1,5 @@
 # ignore all pem files
 *.pem
+
+# ignore databases
+*.db*
