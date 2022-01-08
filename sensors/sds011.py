@@ -3,7 +3,6 @@
 from sds011 import SDS011
 import datetime as dt
 import mqtt_helper as mh
-import json
 import logging
 
 logging.basicConfig(level=logging.WARNING)
