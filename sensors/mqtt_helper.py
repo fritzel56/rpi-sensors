@@ -38,7 +38,7 @@ def send(device_id, action, data='', sub_topic=''):
     
     # Create a UDP socket
     client_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    server_address = (ADDR, PORT)
+    server_address = (addr, port)
     
     # Compose message
     message = make_message(device_id, action, data, sub_topic)
