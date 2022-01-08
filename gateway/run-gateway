@@ -1,0 +1,17 @@
+# Based on code from here:
+# https://github.com/GoogleCloudPlatform/community/blob/master/tutorials/cloud-iot-gateways-rpi/run-gateway
+# see instructions here on how to set the parameters below:
+# https://cloud.google.com/community/tutorials/cloud-iot-gateways-rpi
+# loaded specific variables as local variables so not hard coded here
+
+python3 ./cloudiot_mqtt_gateway.py \
+  --registry_id=$registry_id \
+  --gateway_id=$gateway_id \
+  --cloud_region=us-central1 \
+  --project_id=$project_id \
+  --private_key_file=$private_key_file \
+  --algorithm=RS256 \
+  --ca_certs=$ca_certs \
+  --mqtt_bridge_hostname=mqtt.googleapis.com \
+  --mqtt_bridge_port=8883 \
+  --jwt_expires_minutes=120
