@@ -3,3 +3,6 @@
 
 # ignore databases
 *.db*
+
+# ingore pycaches
+*pycache*
