@@ -44,4 +44,4 @@ def send(device_id, action, data='', sub_topic=''):
     message = make_message(device_id, action, data, sub_topic)
     
     # Send message
-    sock.sendto(message.encode('utf8'), server_address)
+    client_sock.sendto(message.encode('utf8'), server_address)
