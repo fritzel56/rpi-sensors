@@ -7,8 +7,7 @@ import logging
 import sqlite3
 import sys
 
-
-logging.basicConfig(level=logging.WARNING)
+logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.WARNING)
 
 
 def write_to_db(measurement, table):
@@ -59,6 +58,15 @@ if __name__ == '__main__':
             data = str([data])
             mh.send(device_id, 'event', data, 'SDS011')
             write_to_db(measurement, "measurements")
-    except:
+    except KeyboardInterrupt:
         sds.__del__()
-        logging.warning('closed')
+        logging.warning('keyboard interrupt: gracefully exited')
+    except Exception:
+        err = sys.exc_info()
+        err_message = traceback.format_exception(*err)
+        err_str = '<br>'.join(err_message)
+        err_str = err_str.replace('\n', '')
+        issue = "Issue writing to database: <br> {}".format(err_str)
+        sds.__del__()
+        logging.warning('New error. Executing graceful shutdown. Details as follows:')
+        logging.warning(issue)
