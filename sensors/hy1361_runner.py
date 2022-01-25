@@ -7,7 +7,7 @@ import sqlite3
 import logging
 import sys
 
-logging.basicConfig(level=logging.WARNING)
+logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.WARNING)
 
 # Device information
 LOCATION = 2
