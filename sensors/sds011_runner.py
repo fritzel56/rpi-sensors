@@ -42,6 +42,8 @@ if __name__ == '__main__':
     db3path = "measurements.db3"
     while True:
         try:
+            logging.debug('started another loop')
+            
             # set up db connection
             conn = sqlite3.connect(db3path)
             logging.info('connected to database')
