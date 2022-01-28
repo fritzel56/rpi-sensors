@@ -19,23 +19,12 @@ SPEEDS = ["fast", "slow"]
 WEIGHTS = ["A", "C"]
 
 
-def write_to_db(measurement, table):
-    db3path = "measurements.db3"
-    conn = sqlite3.connect(db3path)
+def write_to_db(measurement, conn, table):
     c = conn.cursor()
-    logging.info('connected to database')
-    try:
-        c.execute("insert into {0} (db, range, weight, speed, location, measurement_ts) values (?,?,?,?,?,?)".format(table), measurement)
-        conn.commit()
-        conn.close()
-    except Exception:
-        conn.close()
-        err = sys.exc_info()
-        err_message = traceback.format_exception(*err)
-        err_str = '<br>'.join(err_message)
-        err_str = err_str.replace('\n', '')
-        issue = "Issue writing to database: <br> {}".format(err_str)
-        logging.warning(issue)
+    linedata = [measurement.get(x) for x in ["timestamp","pm2.5","pm10","devid"]]
+    c.execute("insert into {0} (db, range, weight, speed, location, measurement_ts) values (?,?,?,?,?,?)".format(table), measurement)
+    conn.commit()
+    conn.close()
 
 
 def connect():
@@ -80,28 +69,48 @@ if __name__ == '__main__':
     logging.info('connected to device')
 
     data_list = []
+    
+    # database info
+    table = "db"
+    db3path = "measurements.db3"
 
     while True:
-        logging.debug('started another loop')
-        
-        # Read and format data
-        values = list(readSPL(dev))
-        now = dt.datetime.now()
-        now_ts = int(now.timestamp())
-        data = {'db': values[0], 'r': values[1], 'w': values[2], 's': values[3], 'l': LOCATION, 'Date': now_ts}
-        data_list.append(data)
-        
-        # bundle readings to lower the number of messages sent to stay in free zone
-        # send to server once there are 11 of them
-        if len(data_list) >= 11:
-            data_list = str(data_list)
-            mh.send(DEVICEID, 'event', data_list, 'WS1361')
-            data_list = []
-        
-        # write to local database
-        values.append(LOCATION)
-        values.append(now)
-        write_to_db(values, 'db')
-        
-        # sleep until next reading
-        time.sleep(2)
+        try
+            logging.debug('started another loop')
+            
+            # set up db connection
+            conn = sqlite3.connect(db3path)
+            logging.info('connected to database')
+            
+            # Read and format data
+            values = list(readSPL(dev))
+            now = dt.datetime.now()
+            now_ts = int(now.timestamp())
+            data = {'db': values[0], 'r': values[1], 'w': values[2], 's': values[3], 'l': LOCATION, 'Date': now_ts}
+            data_list.append(data)
+            
+            # bundle readings to lower the number of messages sent to stay in free zone
+            # send to server once there are 11 of them
+            if len(data_list) >= 11:
+                data_list = str(data_list)
+                mh.send(DEVICEID, 'event', data_list, 'WS1361')
+                data_list = []
+            
+            # write to local database
+            values.append(LOCATION)
+            values.append(now)
+            write_to_db(values, conn, table)
+            
+            # sleep until next reading
+            time.sleep(2)
+        except KeyboardInterrupt:
+            conn.close()
+            logging.error('keyboard interrupt: gracefully exited')
+            sys.exit(1)
+        except sqlite3.OperationalError:
+            conn.close()
+            logging.warning('Issue writing to database. Details as follows:', exc_info=True)
+        except Exception:
+            conn.close()
+            logging.error('New error. Executing graceful shutdown. Details as follows:', exc_info=True)
+            sys.exit(1)
