@@ -5,8 +5,9 @@ import mqtt_helper as mh
 import time
 import sqlite3
 import logging
+import sys
 
-logging.basicConfig(level=logging.WARNING)
+logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.WARNING)
 
 # Device information
 LOCATION = 2
@@ -16,6 +17,14 @@ DEVICEID = 'WS1361-decibel-meter'
 RANGES = ["30-80", "40-90", "50-100", "60-110", "70-120", "80-130", "30-130"]
 SPEEDS = ["fast", "slow"]
 WEIGHTS = ["A", "C"]
+
+
+def write_to_db(measurement, conn, table):
+    c = conn.cursor()
+    linedata = [measurement.get(x) for x in ["timestamp","pm2.5","pm10","devid"]]
+    c.execute("insert into {0} (db, range, weight, speed, location, measurement_ts) values (?,?,?,?,?,?)".format(table), measurement)
+    conn.commit()
+    conn.close()
 
 
 def connect():
@@ -58,19 +67,20 @@ if __name__ == '__main__':
     # connect to device
     dev = connect()
     logging.info('connected to device')
-    
-    # connect to local database
-    db3path = "measurements.db3"
-    table = "db"
-    conn = sqlite3.connect(db3path)
-    c = conn.cursor()
-    logging.info('connected to database')
 
     data_list = []
+    
+    # database info
+    table = "db"
+    db3path = "measurements.db3"
 
-    try:
-        while True:
+    while True:
+        try
             logging.debug('started another loop')
+            
+            # set up db connection
+            conn = sqlite3.connect(db3path)
+            logging.info('connected to database')
             
             # Read and format data
             values = list(readSPL(dev))
@@ -89,13 +99,18 @@ if __name__ == '__main__':
             # write to local database
             values.append(LOCATION)
             values.append(now)
-            conn = sqlite3.connect(db3path)
-            c = conn.cursor()
-            c.execute("insert into {0} (db, range, weight, speed, location, measurement_ts) values (?,?,?,?,?,?)".format(table), values)
-            conn.commit()
-            conn.close()
+            write_to_db(values, conn, table)
             
             # sleep until next reading
             time.sleep(2)
-    except:
-        conn.close()
+        except KeyboardInterrupt:
+            conn.close()
+            logging.error('keyboard interrupt: gracefully exited')
+            sys.exit(1)
+        except sqlite3.OperationalError:
+            conn.close()
+            logging.warning('Issue writing to database. Details as follows:', exc_info=True)
+        except Exception:
+            conn.close()
+            logging.error('New error. Executing graceful shutdown. Details as follows:', exc_info=True)
+            sys.exit(1)
