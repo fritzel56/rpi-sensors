@@ -21,7 +21,6 @@ WEIGHTS = ["A", "C"]
 
 def write_to_db(measurement, conn, table):
     c = conn.cursor()
-    linedata = [measurement.get(x) for x in ["timestamp","pm2.5","pm10","devid"]]
     c.execute("insert into {0} (db, range, weight, speed, location, measurement_ts) values (?,?,?,?,?,?)".format(table), measurement)
     conn.commit()
     conn.close()
@@ -75,7 +74,7 @@ if __name__ == '__main__':
     db3path = "measurements.db3"
 
     while True:
-        try
+        try:
             logging.debug('started another loop')
             
             # set up db connection
