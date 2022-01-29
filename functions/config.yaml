@@ -1,0 +1,19 @@
+SDS011:
+  dataset: rpi
+  table: pm-sensor
+  data:
+    - pm2_5
+    - pm10
+    - loc
+    - Date
+
+WS1361-decibel-meter:
+  dataset: rpi
+  table: db-sensor
+  data:
+    - db
+    - r
+    - w
+    - s
+    - l
+    - Date
