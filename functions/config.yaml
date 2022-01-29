@@ -1,6 +1,6 @@
 SDS011:
   dataset: rpi
-  table_name: pm-sensor
+  table: pm-sensor
   data:
     - pm2_5
     - pm10
@@ -9,7 +9,7 @@ SDS011:
 
 WS1361-decibel-meter:
   dataset: rpi
-  table_name: db-sensor
+  table: db-sensor
   data:
     - db
     - r

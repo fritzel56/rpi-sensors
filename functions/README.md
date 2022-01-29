@@ -14,10 +14,10 @@ The YAML structure should have information encoded in the following structure:
 
 device_id:
   dataset: dataset_name_in_bigquery
-  table_name: table_name_in_bigquery
+  table: table_name_in_bigquery
   data:
     - field_name1
     - field_name2
     - etc
 
-device_id should be the device ID as registered in IoT core. The dataset and table_name should be the target database and table to write the data to in BigQuery. The data fields reflect which fields should be written to the are the fields which should be written to the database. These fields using these names (and capitalization) should already be present in the message. The only calculation which is done is parsing the date field.
+device_id should be the device ID as registered in IoT core. The dataset and table should be the target database and table to write the data to in BigQuery. The data fields reflect which fields should be written to the are the fields which should be written to the database. These fields using these names (and capitalization) should already be present in the message. The only calculation which is done is parsing the date field.

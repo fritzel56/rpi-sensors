@@ -41,7 +41,7 @@ def pubsub_reader(event, context):
     # read in config data
     with open('config.yaml') as stream:
         config = yaml.full_load(stream)
-    table = config[device_id]['table_name']
+    table = config[device_id]['table']
     dataset = config[device_id]['dataset']
     data_cols = config[device_id]['data']
 
