@@ -13,6 +13,8 @@ logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S
 
 def write_to_db(measurement, conn, table):
     c = conn.cursor()
+    # use write ahead logging
+    c.execute('PRAGMA journal_mode=wal')
     linedata = [measurement.get(x) for x in ["timestamp","pm2.5","pm10","devid"]]
     c.execute("insert into {0} (timestamp,pm2_5,pm10,devid) values (?,?,?,?)".format(table),linedata)
     conn.commit()
