@@ -23,6 +23,12 @@ As I've discussed in my other projects, I'm a fan of Google Cloud thanks to thei
 
 ![RPi Architecture](https://raw.githubusercontent.com/fritzel56/rpi-sensors/readme/images/rpi-architecture.png)
 
+- The sensors connect to the Raspberry Pi via USB. Python is used to collect data from them. See the `sensors` folder for the code used.
+- Google Internet of Things (IoT) is build specifically to handle cases like this. It serves as a  There's a good example with code provided [here](https://cloud.google.com/community/tutorials/cloud-iot-gateways-rpi). The Raspberry Pi hosts a MQTT server (see the `gateway` folder) which passes data to IoT's MQTT end point.
+- IoT forwards the messages to Pub/Sub (note: using subfolders to direct messages to specific Pub/Sub topics was super helpful). In this case, I route data from all sensors which is to be written to BigQuery to the same topic.
+- From here, I considered using Google Dataflow but opted against it as it seemed like overkill (no complicated transformations, aggregations, or filters needed to be applied) and I didn't seem to be able to use it while staying within the free tier. Instead I used Cloud Functions. One specific function is subscribed to the relevant Pub/Sub topic from which it picks up the data, applies a minor transformation, and writes the data to Bigquery (see the `functions` folder).
+- Finally I decided to try out Google's visualization tool, data studio, to make vizualizations which could be shared with others.
+
 ## Links to Views
 
 If you wish to see the sensor readings, you can find them at the following links:
