@@ -21,6 +21,8 @@ WEIGHTS = ["A", "C"]
 
 def write_to_db(measurement, conn, table):
     c = conn.cursor()
+    # use write ahead logging
+    c.execute('PRAGMA journal_mode=wal')
     c.execute("insert into {0} (db, range, weight, speed, location, measurement_ts) values (?,?,?,?,?,?)".format(table), measurement)
     conn.commit()
     conn.close()
