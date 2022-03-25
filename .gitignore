@@ -4,5 +4,8 @@
 # ignore databases
 *.db*
 
-# ingore pycaches
+# ignore pycaches
 *pycache*
+
+# ignore logs
+*log*
