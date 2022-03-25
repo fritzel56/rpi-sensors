@@ -238,9 +238,9 @@ def get_client(
     print('about to connect')
     try:
         client.connect(mqtt_bridge_hostname, mqtt_bridge_port)
+        print('connected')
     except:
         print('problem when trying to connect')
-    print('connected')
 
     mqtt_topic = '/devices/{}/events'.format(gateway_id)
     client.publish(mqtt_topic, 'Gateway started.', qos=0)
