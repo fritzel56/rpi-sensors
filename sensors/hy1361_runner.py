@@ -111,6 +111,10 @@ if __name__ == '__main__':
         except sqlite3.OperationalError:
             conn.close()
             logging.warning('Issue writing to database. Details as follows:', exc_info=True)
+        except usb.core.USBError:
+            logging.warning('Issue reading from device. Reconnecting. Details as follows:', exc_info=True)
+            dev = connect()
+            logging.warning('Reconnected')
         except Exception:
             conn.close()
             logging.error('New error. Executing graceful shutdown. Details as follows:', exc_info=True)
