@@ -10,7 +10,7 @@ import sys
 logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.WARNING)
 
 # Device information
-LOCATION = 2
+LOCATION = 3
 DEVICEID = 'WS1361-decibel-meter'
 
 # HY1361 settings

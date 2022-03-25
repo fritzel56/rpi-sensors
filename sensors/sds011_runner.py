@@ -24,7 +24,7 @@ def write_to_db(measurement, conn, table):
 if __name__ == '__main__':
     # set basic device infro
     device_id = 'SDS011'
-    location = 2
+    location = 3
     
     # ensure device is connected to the server
     response = mh.send(device_id, 'detach', '')
