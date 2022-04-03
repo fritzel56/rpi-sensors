@@ -356,7 +356,8 @@ def main():
                 args.private_key_file, args.algorithm, args.ca_certs,
                 args.mqtt_bridge_hostname, args.mqtt_bridge_port,
                 args.jwt_expires_minutes)
-            print('reconnected')
+            if gateway_state.connected is True:
+                print('reconnected')
             kickoff_time = dt.datetime.utcnow()
             time.sleep(4)
             #client.loop()
@@ -385,7 +386,8 @@ def main():
                 args.private_key_file, args.algorithm, args.ca_certs,
                 args.mqtt_bridge_hostname, args.mqtt_bridge_port,
                 args.jwt_expires_minutes)
-            print('reconnected')
+            if gateway_state.connected is True:
+                print('reconnected')
             kickoff_time = dt.datetime.utcnow()
             time.sleep(4)
             #client.loop()
