@@ -5,6 +5,8 @@ This folder contains the code used to read data from my sensors, write them to a
 1. The HY1361 to monitor ambient noise. Note this seems to be functionally the same as the WS1381.
 2. The SDS011 to monitor particulate matter levels.
 
+Not shown here is that there is also a folder within this folder called `data` which contains the local database where data is stored locally. The database is titled `measurements.db3` and contains to tables: db and measurements. These will need to exist for the code to run.
+
 # File Guide
 
 
