@@ -47,9 +47,13 @@ import json
 import socket
 from time import ctime
 import time
+import logging
 
 import jwt
 import paho.mqtt.client as mqtt
+
+
+logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.INFO)
 
 HOST = ''
 PORT = 10000
@@ -120,7 +124,7 @@ def create_jwt(project_id, private_key_file, algorithm, jwt_expires_minutes):
     with open(private_key_file, 'r') as f:
         private_key = f.read()
 
-    print('Creating JWT using {} from private key file {}'.format(
+    logging.info('Creating JWT using {} from private key file {}'.format(
         algorithm, private_key_file))
 
     return jwt.encode(token, private_key, algorithm=algorithm)
@@ -135,7 +139,7 @@ def error_str(rc):
 
 def on_connect(client, unused_userdata, unused_flags, rc):
     """Callback for when a device connects."""
-    print('on_connect', mqtt.connack_string(rc))
+    logging.info('on_connect', mqtt.connack_string(rc))
 
     gateway_state.connected = True
 
@@ -147,16 +151,15 @@ def on_connect(client, unused_userdata, unused_flags, rc):
 def on_disconnect(client, unused_userdata, rc):
     """Paho callback for when a device disconnects."""
     now = time.monotonic()
-    print('now', now)
-    print('last_msg_out', client._last_msg_out)
-    print('last_msg_in', client._last_msg_in)
+    logging.info('on_disconnect', error_str(rc))
+    logging.info('last_msg_out', client._last_msg_out)
+    logging.info('last_msg_in', client._last_msg_in)
     dif = now - min(client._last_msg_out, client._last_msg_in)
-    print('dif', dif)
-    print('ping_t', client._ping_t)
-    print(rc)
-    print(client)
-    print(unused_userdata)
-    print('on_disconnect', error_str(rc))
+    logging.info('time difference: {}'.format(dif))
+    logging.info('ping_t: {}'.format(client._ping_t))
+    logging.info('rc: {}'.format(rc))
+    logging.info('client: {}'.format(client))
+    logging.info('unused_userdata: {}'.format(unused_userdata))
     gateway_state.connected = False
 
     # re-connect
@@ -166,40 +169,40 @@ def on_disconnect(client, unused_userdata, rc):
 
 def on_publish(unused_client, userdata, mid):
     """Paho callback when a message is sent to the broker."""
-    print('on_publish, userdata {}, mid {}'.format(userdata, mid))
+    logging.debug('on_publish, userdata {}, mid {}'.format(userdata, mid))
 
     try:
         client_addr, message = gateway_state.pending_responses.pop(mid)
         message = str(message).encode('utf8')
-        print('sending data over UDP {} {}'.format(client_addr, message))
+        logging.debug('sending data over UDP {} {}'.format(client_addr, message))
         udpSerSock.sendto(message, client_addr)
-        print('pending response count {}'.format(
+        logging.debug('pending response count {}'.format(
                 len(gateway_state.pending_responses)))
     except KeyError:
-        print('Unable to find key {}'.format(mid))
+        logging.warning('Unable to find key {}'.format(mid))
 
 
 def on_subscribe(unused_client, unused_userdata, mid, granted_qos):
-    print('on_subscribe: mid {}, qos {}'.format(mid, granted_qos))
+    logging.info('on_subscribe: mid {}, qos {}'.format(mid, granted_qos))
 
 
 def on_message(unused_client, unused_userdata, message):
     """Callback when the device receives a message on a subscription."""
     payload = message.payload.decode('utf8')
-    print('Received message \'{}\' on topic \'{}\' with Qos {}'.format(
+    logging.info('Received message \'{}\' on topic \'{}\' with Qos {}'.format(
             payload, message.topic, str(message.qos)))
 
     try:
         client_addr = gateway_state.subscriptions[message.topic]
-        print('Relaying config[{}] to {}'.format(payload, client_addr))
+        logging.info('Relaying config[{}] to {}'.format(payload, client_addr))
         if payload == 'ON' or payload == b'ON':
             udpSerSock.sendto('ON'.encode('utf8'), client_addr)
         elif payload == 'OFF' or payload == b'OFF':
             udpSerSock.sendto('OFF'.encode('utf8'), client_addr)
         else:
-            print('Unrecognized command: {}'.format(payload))
+            logging.warning('Unrecognized command: {}'.format(payload))
     except KeyError:
-        print('Nobody subscribes to topic {}'.format(message.topic))
+        logging.warning('Nobody subscribes to topic {}'.format(message.topic))
 
 
 def get_client(
@@ -235,12 +238,12 @@ def get_client(
     client.on_subscribe = on_subscribe
 
     # Connect to the Google MQTT bridge.
-    print('about to connect')
+    logging.info('about to connect')
     try:
         client.connect(mqtt_bridge_hostname, mqtt_bridge_port)
-        print('connected')
+        logging.info('connected')
     except:
-        print('problem when trying to connect')
+        logging.warning('problem when trying to connect')
 
     mqtt_topic = '/devices/{}/events'.format(gateway_id)
     client.publish(mqtt_topic, 'Gateway started.', qos=0)
@@ -318,36 +321,29 @@ def main():
     gateway_state.mqtt_bridge_hostname = args.mqtt_bridge_hostname
     gateway_state.mqtt_bridge_port = args.mqtt_bridge_hostname
 
-    print('hi there')
-
     client = get_client(
         args.project_id, args.cloud_region, args.registry_id, args.gateway_id,
         args.private_key_file, args.algorithm, args.ca_certs,
         args.mqtt_bridge_hostname, args.mqtt_bridge_port,
         args.jwt_expires_minutes)
 
-    print('hi there 2')
-
     i = 0
     # allow time for connection to succeed
     time.sleep(4)
 
     while True:
-        # print(i)
-        # print('another loop')
         if ((len(gateway_state.pending_responses) > 0) 
               and (((dt.datetime.utcnow() - print_time).seconds > 300) or messages != gateway_state.pending_responses)):
             messages = gateway_state.pending_responses
             print_time = dt.datetime.utcnow()
-            print(print_time)
-            print(gateway_state.pending_responses)
-        # i=i+1
-        #client.loop()
+            logging.info('updating messages')
+            logging.info(print_time)
+            logging.info(gateway_state.pending_responses)
+
 
         if (((dt.datetime.utcnow() - kickoff_time).seconds > args.jwt_expires_minutes * 60 - 120)
                 and len(gateway_state.pending_responses) == 0):
-            print('refreshing the tokens at:')
-            print(dt.datetime.now())
+            logging.info('refreshing the tokens')
 
             client.disconnect()
             time.sleep(4)
@@ -357,18 +353,18 @@ def main():
                 args.mqtt_bridge_hostname, args.mqtt_bridge_port,
                 args.jwt_expires_minutes)
             if gateway_state.connected is True:
-                print('reconnected')
+                logging.info('reconnected')
             kickoff_time = dt.datetime.utcnow()
             time.sleep(4)
             #client.loop()
             for device_id in attached:
-                print('Sending telemetry event for device {}'.format(device_id))
+                logging.info('Sending telemetry event for device {}'.format(device_id))
                 attach_topic = '/devices/{}/attach'.format(device_id)
                 auth = ''  # TODO:    auth = command["jwt"]
                 attach_payload = '{{"authorization" : "{}"}}'.format(auth)
 
-                print('Attaching device {}'.format(device_id))
-                print(attach_topic)
+                logging.info('Attaching device {}'.format(device_id))
+                logging.info(attach_topic)
                 response, attach_mid = client.publish(
                         attach_topic, attach_payload, qos=1)
 
@@ -380,25 +376,25 @@ def main():
 
 
         if gateway_state.connected is False:
-            print('connect status {}'.format(gateway_state.connected))
+            logging.info('connect status {}'.format(gateway_state.connected))
             client = get_client(
                 args.project_id, args.cloud_region, args.registry_id, args.gateway_id,
                 args.private_key_file, args.algorithm, args.ca_certs,
                 args.mqtt_bridge_hostname, args.mqtt_bridge_port,
                 args.jwt_expires_minutes)
             if gateway_state.connected is True:
-                print('reconnected')
+                logging.info('reconnected')
             kickoff_time = dt.datetime.utcnow()
             time.sleep(4)
             #client.loop()
             for device_id in attached:
-                print('Sending telemetry event for device {}'.format(device_id))
+                logging.info('Sending telemetry event for device {}'.format(device_id))
                 attach_topic = '/devices/{}/attach'.format(device_id)
                 auth = ''  # TODO:    auth = command["jwt"]
                 attach_payload = '{{"authorization" : "{}"}}'.format(auth)
 
-                print('Attaching device {}'.format(device_id))
-                print(attach_topic)
+                logging.info('Attaching device {}'.format(device_id))
+                logging.info(attach_topic)
                 response, attach_mid = client.publish(
                         attach_topic, attach_payload, qos=1)
 
@@ -406,20 +402,16 @@ def main():
                 udpSerSock.sendto(message.encode('utf8'), client_addr)
                 gateway_state.pending_responses[attach_mid] = (client_addr, response)
 
-        #print('made it past if ' + str(i-1))
-        
-
-
         try:
             data, client_addr = udpSerSock.recvfrom(BUFSIZE)
         except socket.error:
             continue
-        print('[{}]: From Address {}:{} receive data: {}'.format(
+        logging.debug('[{}]: From Address {}:{} receive data: {}'.format(
                 ctime(), client_addr[0], client_addr[1], data.decode("utf-8")))
 
         command = json.loads(data.decode('utf-8'))
         if not command:
-            print('invalid json command {}'.format(data))
+            logging.warning('invalid json command {}'.format(data))
             continue
 
         action = command["action"]
@@ -427,7 +419,7 @@ def main():
         template = '{{ "device": "{}", "command": "{}", "status" : "ok" }}'
 
         if action == 'event':
-            print('Sending telemetry event for device {}'.format(device_id))
+            logging.debug('Sending telemetry event for device {}'.format(device_id))
             payload = command["data"]
 
             sub_topic = command["sub_topic"]
@@ -436,9 +428,9 @@ def main():
                 mqtt_topic = '/devices/{}/events/{}'.format(device_id, sub_topic)
             else:
                 mqtt_topic = '/devices/{}/events'.format(device_id)
-            print(type(payload))
-            print(payload)
-            print('Publishing message to topic {} with payload \'{}\''.format(
+            logging.debug('payload datatype: {}'.format(type(payload)))
+            logging.debug('payload is: {}'.format(payload))
+            logging.debug('Publishing message to topic {} with payload \'{}\''.format(
                     mqtt_topic, payload))
             response, event_mid = client.publish(mqtt_topic, payload, qos=1)
 
@@ -449,13 +441,13 @@ def main():
         elif action == 'attach':
             if device_id not in attached:
                 attached.append(device_id)
-            print('Sending telemetry event for device {}'.format(device_id))
+            logging.debug('Sending telemetry event for device {}'.format(device_id))
             attach_topic = '/devices/{}/attach'.format(device_id)
             auth = ''  # TODO:    auth = command["jwt"]
             attach_payload = '{{"authorization" : "{}"}}'.format(auth)
 
-            print('Attaching device {}'.format(device_id))
-            print(attach_topic)
+            logging.debug('Attaching device {}'.format(device_id))
+            logging.debug('Attach topic is: {}'.format(attach_topic))
             response, attach_mid = client.publish(
                     attach_topic, attach_payload, qos=1)
 
@@ -466,16 +458,16 @@ def main():
             if device_id in attached:
                 attached.remove(device_id)
             detach_topic = '/devices/{}/detach'.format(device_id)
-            print(detach_topic)
+            logging.debug('detach topic is: {}'.format(detach_topic))
 
             res, mid = client.publish(detach_topic, "{}", qos=1)
 
             message = template.format(res, mid)
-            print('sending data over UDP {} {}'.format(client_addr, message))
+            logging.debug('sending data over UDP {} {}'.format(client_addr, message))
             udpSerSock.sendto(message.encode('utf8'), client_addr)
 
         elif action == "subscribe":
-            print('subscribe config for {}'.format(device_id))
+            logging.debug('subscribe config for {}'.format(device_id))
             subscribe_topic = '/devices/{}/config'.format(device_id)
             skip_next_sub = True
 
@@ -486,9 +478,9 @@ def main():
             udpSerSock.sendto(message.encode('utf8'), client_addr)
 
         else:
-            print('undefined action: {}'.format(action))
+            logging.warning('undefined action: {}'.format(action))
 
-    print('Finished.')
+    logging.info('Finished.')
 
 
 if __name__ == '__main__':
