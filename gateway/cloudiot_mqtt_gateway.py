@@ -384,23 +384,23 @@ def main():
                 args.jwt_expires_minutes)
             if gateway_state.connected is True:
                 logging.info('reconnected')
-            kickoff_time = dt.datetime.utcnow()
-            time.sleep(4)
-            #client.loop()
-            for device_id in attached:
-                logging.info('Sending telemetry event for device {}'.format(device_id))
-                attach_topic = '/devices/{}/attach'.format(device_id)
-                auth = ''  # TODO:    auth = command["jwt"]
-                attach_payload = '{{"authorization" : "{}"}}'.format(auth)
+                kickoff_time = dt.datetime.utcnow()
+                time.sleep(4)
+                #client.loop()
+                for device_id in attached:
+                    logging.info('Sending telemetry event for device {}'.format(device_id))
+                    attach_topic = '/devices/{}/attach'.format(device_id)
+                    auth = ''  # TODO:    auth = command["jwt"]
+                    attach_payload = '{{"authorization" : "{}"}}'.format(auth)
 
-                logging.info('Attaching device {}'.format(device_id))
-                logging.info(attach_topic)
-                response, attach_mid = client.publish(
-                        attach_topic, attach_payload, qos=1)
+                    logging.info('Attaching device {}'.format(device_id))
+                    logging.info(attach_topic)
+                    response, attach_mid = client.publish(
+                            attach_topic, attach_payload, qos=1)
 
-                message = template.format(device_id, 'attach')
-                udpSerSock.sendto(message.encode('utf8'), client_addr)
-                gateway_state.pending_responses[attach_mid] = (client_addr, response)
+                    message = template.format(device_id, 'attach')
+                    udpSerSock.sendto(message.encode('utf8'), client_addr)
+                    gateway_state.pending_responses[attach_mid] = (client_addr, response)
 
         try:
             data, client_addr = udpSerSock.recvfrom(BUFSIZE)
