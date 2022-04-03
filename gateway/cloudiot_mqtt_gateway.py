@@ -255,7 +255,7 @@ def parse_command_line_args():
         'Example Google Cloud IoT Core MQTT device connection code.'))
     parser.add_argument(
         '--project_id',
-        default=os.environ.get('GOOGLE_CLOUD_PROJECT'),
+        default=os.environ.get('project_id'),
         help='GCP cloud project name')
     parser.add_argument(
         '--registry_id', required=True,
