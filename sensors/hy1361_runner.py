@@ -73,7 +73,7 @@ if __name__ == '__main__':
     
     # database info
     table = "db"
-    db3path = "measurements.db3"
+    db3path = "data/measurements.db3"
 
     while True:
         try:

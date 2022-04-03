@@ -41,7 +41,7 @@ if __name__ == '__main__':
     
     # database info
     table = "measurements"
-    db3path = "measurements.db3"
+    db3path = "data/measurements.db3"
     while True:
         try:
             logging.debug('started another loop')
