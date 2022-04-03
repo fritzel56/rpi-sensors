@@ -1,6 +1,6 @@
 # Context
 
-This folder contains the code used to read data from my sensors, write them to a local database, and then forward them to the MQTT gateway. I used two sensors (so far) as part of this project:
+This folder contains the code used to read data from the sensors used in the project, write them to a local database, and then forward them to the MQTT gateway. The project currently  uses two sensors:
 
 1. The HY1361 to monitor ambient noise. Note this seems to be functionally the same as the WS1381.
 2. The SDS011 to monitor particulate matter levels.
