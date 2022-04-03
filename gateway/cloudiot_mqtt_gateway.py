@@ -139,7 +139,7 @@ def error_str(rc):
 
 def on_connect(client, unused_userdata, unused_flags, rc):
     """Callback for when a device connects."""
-    logging.info('on_connect', mqtt.connack_string(rc))
+    logging.info('on_connect': {}.format(mqtt.connack_string(rc)))
 
     gateway_state.connected = True
 
@@ -151,9 +151,9 @@ def on_connect(client, unused_userdata, unused_flags, rc):
 def on_disconnect(client, unused_userdata, rc):
     """Paho callback for when a device disconnects."""
     now = time.monotonic()
-    logging.info('on_disconnect', error_str(rc))
-    logging.info('last_msg_out', client._last_msg_out)
-    logging.info('last_msg_in', client._last_msg_in)
+    logging.info('on_disconnect: {}'.format(error_str(rc)))
+    logging.info('last_msg_out: {}'.format(client._last_msg_out))
+    logging.info('last_msg_in: {}'.format(client._last_msg_in))
     dif = now - min(client._last_msg_out, client._last_msg_in)
     logging.info('time difference: {}'.format(dif))
     logging.info('ping_t: {}'.format(client._ping_t))
@@ -332,7 +332,7 @@ def main():
     time.sleep(4)
 
     while True:
-        if ((len(gateway_state.pending_responses) > 0) 
+        if ((len(gateway_state.pending_responses) > 0)
               and (((dt.datetime.utcnow() - print_time).seconds > 300) or messages != gateway_state.pending_responses)):
             messages = gateway_state.pending_responses
             print_time = dt.datetime.utcnow()
