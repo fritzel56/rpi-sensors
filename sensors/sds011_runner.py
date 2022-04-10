@@ -6,6 +6,8 @@ import mqtt_helper as mh
 import logging
 import sqlite3
 import sys
+import traceback
+import email_helpers as eh
 
 
 logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.WARNING)
@@ -72,4 +74,16 @@ if __name__ == '__main__':
             sds.__del__()
             conn.close()
             logging.error('New error. Executing graceful shutdown. Details as follows:', exc_info=True)
+            
+            # send email alert
+            subject = 'Unexpected Error with SDS011'
+            err = sys.exc_info()
+            err_message = traceback.format_exception(*err)
+            err_str = '<br>'.join(err_message)
+            err_str = err_str.replace('\n', '')
+            body = 'New error for SDS011. Process is shutting down and data will stop recording. Details as follows: <br> {}'.format(err_str)
+            email = eh.email_composition(subject, body)
+            eh.send_email(email)
+            
+            # close the program
             sys.exit(1)
