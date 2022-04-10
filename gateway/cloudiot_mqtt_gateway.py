@@ -335,9 +335,9 @@ def main():
     while True:
         # check if we have pending responses
         if (len(gateway_state.pending_responses) > 0
-                and messages != gateway_state.pending_responses
+                and responses != gateway_state.pending_responses
                 and (dt.datetime.utcnow() - reponse_check_time).seconds > 300):
-            messages = gateway_state.pending_responses
+            responses = gateway_state.pending_responses
             logging.info('currently have the following pending responses: {}', (gateway_state.pending_responses))
             reponse_check_time = dt.datetime.utcnow()
 
