@@ -338,7 +338,7 @@ def main():
                 and responses != gateway_state.pending_responses
                 and (dt.datetime.utcnow() - reponse_check_time).seconds > 300):
             responses = gateway_state.pending_responses
-            logging.info('currently have the following pending responses: {}', (gateway_state.pending_responses))
+            logging.info('currently have the following pending responses: {}'.format(gateway_state.pending_responses))
             reponse_check_time = dt.datetime.utcnow()
 
         # check to see if tokens need a refresh
