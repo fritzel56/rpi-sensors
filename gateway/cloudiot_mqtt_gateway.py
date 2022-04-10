@@ -139,7 +139,7 @@ def error_str(rc):
 
 def on_connect(client, unused_userdata, unused_flags, rc):
     """Callback for when a device connects."""
-    logging.info('on_connect': {}.format(mqtt.connack_string(rc)))
+    logging.info('on_connect: {}'.format(mqtt.connack_string(rc)))
 
     gateway_state.connected = True
 
@@ -304,10 +304,12 @@ def main():
     global gateway_state
     global skip_next_sub
 
+    # used to tell when to update tokens
     kickoff_time = dt.datetime.utcnow()
 
-    print_time = dt.datetime.utcnow()
-    messages=[]
+    # used to track responses
+    responses=[]
+    reponse_check_time = dt.datetime.utcnow()
 
     attached = []
 
@@ -327,24 +329,23 @@ def main():
         args.mqtt_bridge_hostname, args.mqtt_bridge_port,
         args.jwt_expires_minutes)
 
-    i = 0
     # allow time for connection to succeed
     time.sleep(4)
 
     while True:
-        if ((len(gateway_state.pending_responses) > 0)
-              and (((dt.datetime.utcnow() - print_time).seconds > 300) or messages != gateway_state.pending_responses)):
+        # check if we have pending responses
+        if (len(gateway_state.pending_responses) > 0
+                and messages != gateway_state.pending_responses
+                and (dt.datetime.utcnow() - reponse_check_time).seconds > 300):
             messages = gateway_state.pending_responses
-            print_time = dt.datetime.utcnow()
-            logging.info('updating messages')
-            logging.info(print_time)
-            logging.info(gateway_state.pending_responses)
+            logging.info('currently have the following pending responses: {}', (gateway_state.pending_responses))
+            reponse_check_time = dt.datetime.utcnow()
 
-
+        # check to see if tokens need a refresh
         if (((dt.datetime.utcnow() - kickoff_time).seconds > args.jwt_expires_minutes * 60 - 120)
                 and len(gateway_state.pending_responses) == 0):
+            
             logging.info('refreshing the tokens')
-
             client.disconnect()
             time.sleep(4)
             client = get_client(
@@ -352,11 +353,8 @@ def main():
                 args.private_key_file, args.algorithm, args.ca_certs,
                 args.mqtt_bridge_hostname, args.mqtt_bridge_port,
                 args.jwt_expires_minutes)
-            if gateway_state.connected is True:
-                logging.info('reconnected')
             kickoff_time = dt.datetime.utcnow()
             time.sleep(4)
-            #client.loop()
             for device_id in attached:
                 logging.info('Sending telemetry event for device {}'.format(device_id))
                 attach_topic = '/devices/{}/attach'.format(device_id)
@@ -374,7 +372,7 @@ def main():
 
         client.loop()
 
-
+        # check to see if connection lost
         if gateway_state.connected is False:
             logging.info('connect status {}'.format(gateway_state.connected))
             client = get_client(
@@ -382,25 +380,27 @@ def main():
                 args.private_key_file, args.algorithm, args.ca_certs,
                 args.mqtt_bridge_hostname, args.mqtt_bridge_port,
                 args.jwt_expires_minutes)
-            if gateway_state.connected is True:
-                logging.info('reconnected')
-                kickoff_time = dt.datetime.utcnow()
-                time.sleep(4)
-                #client.loop()
-                for device_id in attached:
-                    logging.info('Sending telemetry event for device {}'.format(device_id))
-                    attach_topic = '/devices/{}/attach'.format(device_id)
-                    auth = ''  # TODO:    auth = command["jwt"]
-                    attach_payload = '{{"authorization" : "{}"}}'.format(auth)
+            time.sleep(4)
+            logging.info('Disconnected. Attempted to reconnect.')
+            kickoff_time = dt.datetime.utcnow()
+            for device_id in attached:
+                logging.info('Sending telemetry event for device {}'.format(device_id))
+                attach_topic = '/devices/{}/attach'.format(device_id)
+                auth = ''  # TODO:    auth = command["jwt"]
+                attach_payload = '{{"authorization" : "{}"}}'.format(auth)
 
-                    logging.info('Attaching device {}'.format(device_id))
-                    logging.info(attach_topic)
-                    response, attach_mid = client.publish(
-                            attach_topic, attach_payload, qos=1)
+                logging.info('Attaching device {}'.format(device_id))
+                logging.info(attach_topic)
+                response, attach_mid = client.publish(
+                        attach_topic, attach_payload, qos=1)
 
-                    message = template.format(device_id, 'attach')
-                    udpSerSock.sendto(message.encode('utf8'), client_addr)
-                    gateway_state.pending_responses[attach_mid] = (client_addr, response)
+                message = template.format(device_id, 'attach')
+                udpSerSock.sendto(message.encode('utf8'), client_addr)
+                gateway_state.pending_responses[attach_mid] = (client_addr, response)
+    
+        # can be useful while debugging
+        if dt.datetime.utcnow().second == 10:
+            logging.debug('looping again')
 
         try:
             data, client_addr = udpSerSock.recvfrom(BUFSIZE)
