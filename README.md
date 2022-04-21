@@ -6,6 +6,7 @@ This repository holds the code that I'm using read data from sensors to measure 
 **[Repo Guide](#repo-guide)**<br>
 **[Architecture Overview](#architecture-overview)**<br>
 **[Links to Views](#links-to-views)**<br>
+**[Data Access](#data-access)**<br>
 
 ## Motivation
 My apartment is currently located near a busy intersection. With the arrival of COVID, I started working from home and became much more aware of the volume of traffic going by outside. This in turn caused me to become concerned about the possible environmental impact they might be having on me. So I did what any engineer would do: I bought a Raspberry Pi and a couple sensors and started streaming data to the web.
@@ -35,3 +36,12 @@ If you wish to see the sensor readings, you can find them at the following links
 - Views for the air particulate matter sensor can be found [here](https://datastudio.google.com/reporting/c8f59083-bdd3-4251-b906-5c7bba750328/page/Gi6WC).
 - Views for the ambient sound level sensor can be found [here](https://datastudio.google.com/reporting/786a933c-c057-44c3-a1ac-9c4d40a36b8e/page/49pYC)
 - Some of my thoughts on the pros and cons of Google Data Studio can be found [here](https://datastudio.google.com/reporting/20df1729-cb84-480b-a0fa-78264c09435b/page/5EBYC/edit)
+
+## Data Access
+
+If you have a Google Cloud account, you can query this data yourself. I've made [authorized views](https://cloud.google.com/bigquery/docs/authorized-views) of the base tables which live in a dataset which has been [granted](https://cloud.google.com/bigquery/docs/dataset-access-controls) to `allAuthenticatedUsers`. The specific views can be seen below:
+
+- Decibel data is in: `raspberry-pi-317820.public.db_sensor`
+-Particulate Matter data is in: `raspberry-pi-317820.public.pm_sensor`
+
+Please note that to query these views, you will need your own project and that any charges associate with the queries you run will be charged to your project. This is because only the `BigQuery Data Viewer` role has been granted.
