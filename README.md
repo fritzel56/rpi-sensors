@@ -42,6 +42,6 @@ If you wish to see the sensor readings, you can find them at the following links
 If you have a Google Cloud account, you can query this data yourself. I've made [authorized views](https://cloud.google.com/bigquery/docs/authorized-views) of the base tables which live in a dataset which has been [granted](https://cloud.google.com/bigquery/docs/dataset-access-controls) to `allAuthenticatedUsers`. The specific views can be seen below:
 
 - Decibel data is in: `raspberry-pi-317820.public.db_sensor`
--Particulate Matter data is in: `raspberry-pi-317820.public.pm_sensor`
+- Particulate Matter data is in: `raspberry-pi-317820.public.pm_sensor`
 
 Please note that to query these views, you will need your own project and that any charges associate with the queries you run will be charged to your project. This is because only the `BigQuery Data Viewer` role has been granted.
